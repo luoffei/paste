@@ -1,4 +1,5 @@
 use crate::error::{Error, Result};
+use convert_case::Casing;
 use proc_macro::{token_stream, Delimiter, Ident, Span, TokenTree};
 use std::iter::Peekable;
 
@@ -181,37 +182,13 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
                         evaluated.push(last.to_uppercase());
                     }
                     "snake" => {
-                        let mut acc = String::new();
-                        let mut prev = '_';
-                        for ch in last.chars() {
-                            if ch.is_uppercase() && prev != '_' {
-                                acc.push('_');
-                            }
-                            acc.push(ch);
-                            prev = ch;
-                        }
-                        evaluated.push(acc.to_lowercase());
+                        evaluated.push(last.to_case(convert_case::Case::Snake));
                     }
                     "camel" => {
-                        let mut acc = String::new();
-                        let mut prev = '_';
-                        for ch in last.chars() {
-                            if ch != '_' {
-                                if prev == '_' {
-                                    for chu in ch.to_uppercase() {
-                                        acc.push(chu);
-                                    }
-                                } else if prev.is_uppercase() {
-                                    for chl in ch.to_lowercase() {
-                                        acc.push(chl);
-                                    }
-                                } else {
-                                    acc.push(ch);
-                                }
-                            }
-                            prev = ch;
-                        }
-                        evaluated.push(acc);
+                        evaluated.push(last.to_case(convert_case::Case::Camel));
+                    }
+                    "pascal" => {
+                        evaluated.push(last.to_case(convert_case::Case::Pascal));
                     }
                     _ => {
                         return Err(Error::new2(
